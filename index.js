@@ -10,6 +10,15 @@ httpServer.on('request', (req, res) => {
         res.end(fs.readFileSync('index.html'))
         return;
     }
+
+    if(req.url === '/upload') {
+        const fileName = req.headers['file-name']
+        req.on('data', chunk => {
+            fs.appendFileSync(`./uploads/${fileName}`, chunk)
+            console.log(`recive chunck ${chunk.length}`)
+        })
+        res.end('Uploaded')
+    }
 })
 
 

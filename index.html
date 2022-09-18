@@ -1,12 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Uploader</title>
 </head>
+
 <body>
     <h1>this is file Uploader</h1>
+    <input type="file" id="fileInput">
+
+    <button id="uploadButton">Upload</button>
+    <div id="outputDiv"></div>
+
+
+    <script>
+        const uploadButton = document.getElementById('uploadButton')
+        const outputDiv = document.getElementById('outputDiv')
+        const fileInput = document.getElementById('fileInput')
+
+        uploadButton.addEventListener('click', () => {
+            const fileReader = new FileReader();
+            const theFile = fileInput.files[0];
+
+            fileReader.onload = async ev => {
+                const CHUNCK_SIZE = 10000;
+
+                const ChunckCount = ev.target.result.byteLength / CHUNCK_SIZE;
+
+                console.log('read succe')
+
+                const filename = new Date().getTime() + theFile.name;
+
+                for (let chunkId = 0; chunkId <  ChunckCount + 1; chunkId++) {
+                    let chunk = ev.target.result.slice(chunkId * CHUNCK_SIZE, chunkId * CHUNCK_SIZE + CHUNCK_SIZE);
+
+                    await fetch ('http://localhost:8080/upload', {
+                        method: "POST",
+                        headers: {
+                            "content-type": "application/octet-stream",
+                            "content-length": chunk.length,
+                            "file-name": filename
+                        },
+                        body: chunk
+
+                    })
+
+                    outputDiv.textContent = Math.round(chunkId * 100  / ( parseInt(ChunckCount) + 1))   + " %";
+                }
+
+            }
+            fileReader.readAsArrayBuffer(theFile)
+        })
+    </script>
 </body>
+
 </html>
